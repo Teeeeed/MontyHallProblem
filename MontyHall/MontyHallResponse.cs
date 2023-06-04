@@ -6,7 +6,7 @@ public class SimulationResult
 {
     public int ChosenDoorByPlayer { get; set; }
     public int ChosenDoorByPresenter { get; set; }
-    public List<bool> Simulation { get; } = new() { false, false, false };
+    public List<bool> Simulation { get; set; }
     public bool Hit { get; set; }
 }
 

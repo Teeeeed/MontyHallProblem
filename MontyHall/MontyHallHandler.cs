@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Runtime.CompilerServices;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
 using Amazon.Lambda.APIGatewayEvents;
@@ -11,7 +10,6 @@ using Newtonsoft.Json.Converters;
 using Amazon.Lambda.Serialization.SystemTextJson;
 
 [assembly: LambdaSerializer(typeof(DefaultLambdaJsonSerializer))]
-[assembly: InternalsVisibleTo("MontyHall.Tests")]
 namespace MontyHall
 {
     public class MontyHallHandler
@@ -20,11 +18,19 @@ namespace MontyHall
 
         public Task<APIGatewayProxyResponse> Handler(APIGatewayProxyRequest request, ILambdaContext context)
         {
-            var montyHallRequest = JsonConvert.DeserializeObject<MontyHallRequest>(request.Body);
-            if (montyHallRequest is null)
+            bool isNumOfSimulationsInQuery = APIGatewayProxyRequestUtility.TryGetQueryParam(request, "NumOfSimulations", out int numOfSimulations);
+            bool isAlwaysChangeChoiceInQuery = APIGatewayProxyRequestUtility.TryGetQueryParam(request, "AlwaysChangeChoice", out bool alwaysChangeChoice);
+
+            if (!(isNumOfSimulationsInQuery && isAlwaysChangeChoiceInQuery))
             {
-                throw new Exception("Invalid request, failed to deserialize the request body.");
+                throw new Exception("Invalid request, query parameters are missing.");
             }
+
+            var montyHallRequest = new MontyHallRequest
+            {
+                NumOfSimulations = numOfSimulations,
+                AlwaysChangeChoice = alwaysChangeChoice
+            };
 
             var rand = new Random();
             var simulationResults = Enumerable.Range(0, montyHallRequest.NumOfSimulations)
@@ -55,16 +61,14 @@ namespace MontyHall
         /// <param name="carDoor">The door behind which the car is.</param>
         /// <param name="changeChoice"> True if the player changes their initial choice, otherwise false.</param>
         /// <returns>The <see cref="SimulationResult" /> of a single case of the monty hall problem.</returns>
-        internal SimulationResult SimulateMontyHall(int carDoor, bool changeChoice)
+        private SimulationResult SimulateMontyHall(int carDoor, bool changeChoice)
         {
             var simulationResult = new SimulationResult
             {
                 ChosenDoorByPlayer = 0,
-                Simulation =
-                {
-                    [carDoor] = true
-                }
+                Simulation = new List<bool>{false, false, false}
             };
+            simulationResult.Simulation[carDoor] = true;
 
             switch (carDoor)
             {

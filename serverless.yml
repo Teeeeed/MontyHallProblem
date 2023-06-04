@@ -9,7 +9,6 @@ provider:
   memorySize: 256 # Default memory size for all functions in MB
   timeout: 30 # Default timeout for all functions in seconds
   logRetentionInDays: 14 # Default log retention in days
-  endpointType: EDGE # REGIONAL or EDGE
 
   tracing:
     lambda: true # Enable X-Ray tracing
@@ -37,4 +36,4 @@ functions:
     events:
       - http:
           path: /montyhall
-          method: post
+          method: get
