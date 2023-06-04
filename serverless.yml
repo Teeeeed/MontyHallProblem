@@ -1,0 +1,40 @@
+service: monty-hall-api
+
+frameworkVersion: "3"
+
+provider:
+  name: aws
+  runtime: dotnet6
+  region: eu-central-1
+  memorySize: 256 # Default memory size for all functions in MB
+  timeout: 30 # Default timeout for all functions in seconds
+  logRetentionInDays: 14 # Default log retention in days
+  endpointType: EDGE # REGIONAL or EDGE
+
+  tracing:
+    lambda: true # Enable X-Ray tracing
+    apiGateway: true
+
+  environment: # Environment variables for all functions
+    APP_VERSION: ${env:APP_VERSION, 'latest'}
+
+  logs:
+    restApi: true # Enable API access logs
+
+  apiGateway:
+    metrics: true # Enable API metrics
+
+package:
+  individually: true
+
+functions:
+  MontyHallApi:
+    description: Get simulation results of the monty hall problem
+    handler: MontyHall::MontyHall.MontyHallHandler::Handler
+    role: !Sub arn:aws:iam::${AWS::AccountId}:role/lambda-api
+    package:
+      artifact: MontyHall/bin/MontyHall.zip
+    events:
+      - http:
+          path: /montyhall
+          method: post
