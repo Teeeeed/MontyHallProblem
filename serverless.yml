@@ -30,7 +30,6 @@ functions:
   MontyHallApi:
     description: Get simulation results of the monty hall problem
     handler: MontyHall::MontyHall.MontyHallHandler::Handler
-    role: !Sub arn:aws:iam::${AWS::AccountId}:role/lambda-api
     package:
       artifact: MontyHall/bin/MontyHall.zip
     events:
